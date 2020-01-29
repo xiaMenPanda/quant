@@ -15,7 +15,6 @@ class Command(BaseCommand):
         for board in boards:
             read_path = base_path + board
             files = os.listdir(read_path)
-            # TODO 1.写入项目文件 2.拆分函数
             for file in files:
                 try:
                     with open(f"{read_path}/{file}", "r", encoding="GB2312") as f:
@@ -47,7 +46,7 @@ class Command(BaseCommand):
                     avg_volume = sum(list(tick_data["成交额"]))/len(list(tick_data["成交额"]))
                     avg_volume = float('%.8f' % avg_volume)
 
-                    avg_volume_rates = [float('%.2f' % (i/(10000*avg_volume))) for i in list(tick_data["成交额"])]
+                    avg_volume_rates = [float('%.2f' % (i/(avg_volume))) for i in list(tick_data["成交额"])]
                     tick_data["与年成交量比率"] = avg_volume_rates
 
                     # 保存到数据库中

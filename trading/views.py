@@ -15,6 +15,8 @@ from .manager import iuid_to_df
 class InstrumentsView(APIView):
 
     def get(self, request, version):
+        Instruments.objects.filter(name__startswith="*ST").update(status=0)
+        Instruments.objects.filter(size_in_file__lt=150).update(status=0)
         a = iuid_to_df("002665")
         return Response({})
 

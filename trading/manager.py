@@ -17,7 +17,7 @@ def iuid_to_df(iuid, infos = None, durations=None, start_time=START_DATE, end_ti
     if not obj:
         raise ValueError(f"{iuid} is not exist")
     board = obj.board
-    csv_name = f"{board}{iuid}.csv"
+    csv_name = f"{iuid}.csv"
     csv_path = f"{settings.BASE_DIR}/historically/{board}/{csv_name}"
     df = pd.read_csv(csv_path, sep=",")
     if durations:
@@ -34,3 +34,4 @@ def iuid_to_df(iuid, infos = None, durations=None, start_time=START_DATE, end_ti
         "size": size,
         "df": df
     }
+    return result
