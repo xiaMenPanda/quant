@@ -163,3 +163,5 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'common.drf_utils.exception_handler',
     'STRICT_JSON': False
 }
+
+BASE_HISTORICALLY_PATH = BASE_DIR + "/historically/"
