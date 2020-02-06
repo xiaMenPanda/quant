@@ -165,3 +165,8 @@ REST_FRAMEWORK = {
 }
 
 BASE_HISTORICALLY_PATH = BASE_DIR + "/historically/"
+
+SHARE_PATH = "/mnt/hgfs/share_with_ub/"
+
+REGION = "CN"
+

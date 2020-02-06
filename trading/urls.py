@@ -21,7 +21,8 @@ from rest_framework_swagger.views import get_swagger_view
 schema_view = get_swagger_view(title='User API')
 
 api_pattern = [
-    url(r'^instruments$', InstrumentsView.as_view()),
+    url(r'^generate$', InstrumentsView.as_view()),
+
     ]
 
 versions_patterns = [

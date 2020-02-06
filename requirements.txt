@@ -43,3 +43,5 @@ aliyun-python-sdk-sts
 celery==4.3.0
 sentry-sdk==0.13.4
 mootdx
+matplotlib
+tables
