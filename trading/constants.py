@@ -5,6 +5,7 @@ class InstStatus(EnumBase):
     DATA_PROBLEM = 1
     SPECIAL = 2
     ACTIVE = 3
+    RESEARCH = 4
 
 
 DATE_TIME_FORMATE = '%Y-%m-%d'

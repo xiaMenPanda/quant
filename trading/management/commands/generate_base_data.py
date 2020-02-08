@@ -32,11 +32,11 @@ class Command(BaseCommand):
             for file in files:
                 try:
                     iuid, name, base_df = self.genetate_base(read_path, file, board)
-                    # obj = Instruments.objects.filter(iuid=iuid).first()
-                    # if base_df.shape[0] == 0 or obj:
-                    #     continue
-                    if base_df.shape[0] == 0:
+                    obj = Instruments.objects.filter(iuid=iuid).first()
+                    if base_df.shape[0] == 0 or obj:
                         continue
+                    # if base_df.shape[0] == 0:
+                    #     continue
                     factor_df = self.generate_factor(base_df, name, board)
                     base_store[iuid], factor_store[iuid] = base_df, factor_df  # 生成hdf文件
                     params = {}
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                         factor_df)
                     params.update(base_params)
                     params.update(factor_mysql_params)
-                    print("xxxxx")
+                    Instruments.objects.create(**params)
                 except Exception as ex:
                     print(iuid, name)
                     print(ex)
@@ -91,7 +91,7 @@ class Command(BaseCommand):
         for board in boards:
             board_dir = BASE_HISTORICALLY_PATH + board
             os.mkdir(board_dir)
-        # Instruments.objects.all().drop()
+        Instruments.objects.all().delete()
 
     def generate_factor(self, base_df, name, board):
         data_lengths = [i for i in DURATION.NAME_TO_VALUE]

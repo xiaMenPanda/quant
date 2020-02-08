@@ -108,7 +108,11 @@ def get_factor_mysql(factor_df):
     factor_mysql_params["cum_volatility_three_months"] = cum_volatility_series.THREE_MONTHS
     factor_mysql_params["cum_volatility_six_months"] = cum_volatility_series.SIX_MONTHS
 
-    for key, value in factor_mysql_params.items():
-        factor_mysql_params[key] = float('%.4f' % value)
+    for key in list(factor_mysql_params.keys()):
+        value = factor_mysql_params[key]
+        if pd.isna(value):
+            del factor_mysql_params[key]
+        else:
+            factor_mysql_params[key] = float('%.4f' % value)
 
     return factor_mysql_params
