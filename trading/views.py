@@ -9,7 +9,7 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .models import Instruments
-from .manager import get_factor_index_to_ticker
+
 
 
 class InstrumentsView(APIView):

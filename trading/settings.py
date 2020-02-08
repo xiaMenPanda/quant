@@ -170,3 +170,17 @@ SHARE_PATH = "/mnt/hgfs/share_with_ub/"
 
 REGION = "CN"
 
+
+import pandas as pd
+
+
+# 通过上证指数文件获得交易日,写死
+def get_trade_dates():
+    read_path = SHARE_PATH + "INDEX/" + "SH999999.txt"
+    df = pd.read_csv(read_path, sep="\s+", encoding="gbk", header=1, skipfooter=1,
+                                parse_dates=['日期'], index_col="日期", engine='python')
+    return list(df.index)
+
+
+TRADE_DATES = get_trade_dates()
+

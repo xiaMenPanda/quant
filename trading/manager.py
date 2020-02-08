@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from trading.settings import BASE_HISTORICALLY_PATH, REGION
+from trading.settings import BASE_HISTORICALLY_PATH, REGION, SHARE_PATH, TRADE_DATES
 from datetime import datetime
 from common.convert import convert_tz, parse_as_timestamp, timestamp_to_datetime, datetime_to_timestamp
 
@@ -9,32 +9,13 @@ from .constants import DATE_TIME_FORMATE, RESEARCH_BOARTS, INDEX_MAP, DURATION
 from .models import Instruments
 
 
-# 剔除INDEX对TICKER的影响的系数1的确认,(1/系数1)*波动率
-def get_factor_index_to_ticker():
-    factor_dict = {}
-    for research_board in RESEARCH_BOARTS:
-        volatilities = Instruments.objects.filter(board=research_board).values_list("base_volatility")
-        volatilities = [i[0] for i in volatilities]
-        index_iuid = INDEX_MAP[research_board]
-        index_base_volatility = Instruments.objects.filter(iuid=index_iuid).first().base_volatility
-        cal_board_base_volatility = sum(volatilities)/len(volatilities)
-        facor_one = 100/(cal_board_base_volatility+100)  # 关键,单位换算1
-        facor_one = float('%.2f' % facor_one)
-        factor_dict[research_board] = (index_base_volatility, facor_one)
-        print(f"{research_board} cal {facor_one}")
-    return factor_dict
-
-
 def absolute_value(value):
     return abs(value)
 
 
-def cal_factor_info(board, df, duration_ts=DURATION.ONE_YEAR, flag=0):
-    end_dt = convert_tz(datetime.now(), REGION)
-    start_ts = datetime_to_timestamp(end_dt) - duration_ts
-    start_dt = timestamp_to_datetime(start_ts, REGION)
-    start_time = datetime.strftime(start_dt, DATE_TIME_FORMATE)
-    end_time = datetime.strftime(end_dt, DATE_TIME_FORMATE)
+def cal_factor_info(board, df, trade_dates_before=DURATION.ONE_YEAR, trade_dates_before_stop=-1, flag=0):
+    start_time = TRADE_DATES[-trade_dates_before]
+    end_time = TRADE_DATES[trade_dates_before_stop]
     df = df[
         (pd.to_datetime(df.index) >= pd.to_datetime(start_time)) &
         (pd.to_datetime(df.index) <= pd.to_datetime(end_time))]
@@ -75,3 +56,59 @@ def board_to_index_df(board):
     base_store.close()
     factor_store.close()
     return index_base_df, index_factor_df
+
+
+def get_factor_mysql(factor_df):
+    factor_mysql_params = {}
+    cal_size_series = factor_df["cal_size"]
+    cum_volatility_series = factor_df["cumulative_volatility"]
+    avg_volume_series = factor_df["avg_volume"]
+    avg_abs_volatility_series = factor_df["avg_abs_volatility"]
+    
+    # 平均成交量， 取4个比值参数参数
+    factor_mysql_params["base_volume"] = avg_volume_series.ONE_YEAR
+    factor_mysql_params[
+        "avg_volume_three_days_div_two_weeks"] = avg_volume_series.THREE_DAYS / avg_volume_series.TWO_WEEKS
+    factor_mysql_params[
+        "avg_volume_one_week_div_one_month"] = avg_volume_series.ONE_WEEK / avg_volume_series.ONE_MONTH
+    factor_mysql_params[
+        "avg_volume_two_weeks_div_two_months"] = avg_volume_series.TWO_WEEKS / avg_volume_series.TWO_MONTHS
+    factor_mysql_params[
+        "avg_volume_one_month_div_one_year"] = avg_volume_series.ONE_MONTH / avg_volume_series.ONE_YEAR
+
+    # 平均价格变化大小， 取4个比值参数参数
+    factor_mysql_params["base_volatility"] = avg_abs_volatility_series.ONE_YEAR
+    factor_mysql_params[
+        "avg_abs_volatility_three_days_div_two_weeks"] = avg_abs_volatility_series.THREE_DAYS / avg_abs_volatility_series.TWO_WEEKS
+    factor_mysql_params[
+        "avg_abs_volatility_one_week_div_one_month"] = avg_abs_volatility_series.ONE_WEEK / avg_abs_volatility_series.ONE_MONTH
+    factor_mysql_params[
+        "avg_abs_volatility_two_weeks_div_two_months"] = avg_abs_volatility_series.TWO_WEEKS / avg_abs_volatility_series.TWO_MONTHS
+    factor_mysql_params[
+        "avg_abs_volatility_one_month_div_one_year"] = avg_abs_volatility_series.ONE_MONTH / avg_abs_volatility_series.ONE_YEAR
+
+    # 最新一天是否还在
+    factor_mysql_params["cal_size_on_day"] = cal_size_series.ONE_DAY
+    factor_mysql_params["cal_size_two_days"] = cal_size_series.TWO_DAYS
+    factor_mysql_params["cal_size_three_days"] = cal_size_series.THREE_DAYS
+    factor_mysql_params["cal_size_one_week"] = cal_size_series.ONE_WEEK
+    factor_mysql_params["cal_size_two_weeks"] = cal_size_series.TWO_WEEKS
+    factor_mysql_params["cal_size_one_month"] = cal_size_series.ONE_MONTH
+    factor_mysql_params["cal_size_two_months"] = cal_size_series.TWO_MONTHS
+    factor_mysql_params["cal_size_two_months"] = cal_size_series.TWO_MONTHS
+    factor_mysql_params["cal_size_three_months"] = cal_size_series.THREE_MONTHS
+    factor_mysql_params["cal_size_six_months"] = cal_size_series.SIX_MONTHS
+
+    # 累计涨幅参数
+    factor_mysql_params["cum_volatility_one_week"] = cum_volatility_series.ONE_WEEK
+    factor_mysql_params["cum_volatility_two_weeks"] = cum_volatility_series.TWO_WEEKS
+    factor_mysql_params["cum_volatility_one_month"] = cum_volatility_series.ONE_MONTH
+    factor_mysql_params["cum_volatility_two_months"] = cum_volatility_series.TWO_MONTHS
+    factor_mysql_params["cum_volatility_two_months"] = cum_volatility_series.TWO_MONTHS
+    factor_mysql_params["cum_volatility_three_months"] = cum_volatility_series.THREE_MONTHS
+    factor_mysql_params["cum_volatility_six_months"] = cum_volatility_series.SIX_MONTHS
+
+    for key, value in factor_mysql_params.items():
+        factor_mysql_params[key] = float('%.4f' % value)
+
+    return factor_mysql_params

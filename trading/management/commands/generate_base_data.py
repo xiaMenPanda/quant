@@ -11,9 +11,10 @@ from common.convert import convert_tz, parse_as_timestamp, timestamp_to_datetime
 from common.logger import log
 from trading.models import Instruments
 from trading.constants import DATE_TIME_FORMATE, RESEARCH_BOARTS, INDEX_MAP, DURATION, RESEARCH_FACTORS
-from trading.manager import cal_factor_info, board_to_index_df
+from trading.manager import cal_factor_info, board_to_index_df, get_factor_mysql
 
 boards = ["INDEX", "SH", "MSB", "GEM", "SZ"]
+
 
 
 class Command(BaseCommand):
@@ -31,13 +32,22 @@ class Command(BaseCommand):
             for file in files:
                 try:
                     iuid, name, base_df = self.genetate_base(read_path, file, board)
+                    # obj = Instruments.objects.filter(iuid=iuid).first()
+                    # if base_df.shape[0] == 0 or obj:
+                    #     continue
                     if base_df.shape[0] == 0:
                         continue
-                    base_store[iuid], factor_store[iuid] = base_df, self.generate_factor(base_df, name, board)  # 生成hdf文件
+                    factor_df = self.generate_factor(base_df, name, board)
+                    base_store[iuid], factor_store[iuid] = base_df, factor_df  # 生成hdf文件
+                    params = {}
+                    base_params, factor_mysql_params = {"iuid": iuid, "name": name, "board": board}, get_factor_mysql(
+                        factor_df)
+                    params.update(base_params)
+                    params.update(factor_mysql_params)
+                    print("xxxxx")
                 except Exception as ex:
                     print(iuid, name)
                     print(ex)
-                    print("xxxxxxxx")
 
             base_store.close()
             factor_store.close()
@@ -81,15 +91,17 @@ class Command(BaseCommand):
         for board in boards:
             board_dir = BASE_HISTORICALLY_PATH + board
             os.mkdir(board_dir)
+        # Instruments.objects.all().drop()
 
     def generate_factor(self, base_df, name, board):
         data_lengths = [i for i in DURATION.NAME_TO_VALUE]
         factor_df = pd.DataFrame()
         factor_df.index.name = name
         for duration in data_lengths:
-            res = cal_factor_info(board, base_df, duration_ts=DURATION.NAME_TO_VALUE[duration])
+            res = cal_factor_info(board, base_df, trade_dates_before=DURATION.NAME_TO_VALUE[duration])
             series = pd.Series(res, name=duration)
             factor_df = factor_df.append(series)
+        # 可在此处操作
         return factor_df
 
     def eliment_coefficient(self, value, coefficient):

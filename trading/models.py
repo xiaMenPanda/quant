@@ -12,5 +12,6 @@ class Instruments(models.Model):
                                              choices=InstStatus.VALUE_TO_NAME.items())
     size_in_file = models.IntegerField()
 
+
     class Meta:
         db_table = 'instruments'

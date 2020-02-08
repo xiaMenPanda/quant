@@ -28,15 +28,29 @@ INDEX_MAP = {
 }
 
 
+# class DURATION(EnumBase):
+#     SO_FAR = YEAR * 5
+#     ONE_YEAR = YEAR
+#     SIX_MONTHS = MONTH * 6
+#     THREE_MONTHS = MONTH * 3
+#     ONE_MONTH = MONTH
+#     THREE_WEEKS = WEEK * 3
+#     TWO_WEEKS = WEEK * 2
+#     ONE_WEEK = WEEK
+
+
 class DURATION(EnumBase):
-    SO_FAR = YEAR * 5
-    ONE_YEAR = YEAR
-    SIX_MONTHS = MONTH * 6
-    THREE_MONTHS = MONTH * 3
-    ONE_MONTH = MONTH
-    THREE_WEEKS = WEEK * 3
-    TWO_WEEKS = WEEK * 2
-    ONE_WEEK = WEEK
+    ONE_DAY = 1
+    TWO_DAYS = 2
+    THREE_DAYS = 3
+    ONE_WEEK = 5
+    TWO_WEEKS = 10
+    THREE_WEEKS = 15
+    ONE_MONTH = 20
+    TWO_MONTHS = 40
+    THREE_MONTHS = 60
+    SIX_MONTHS = 130
+    ONE_YEAR = 260
 
 
 RESEARCH_FACTORS = ["avg_abs_volatility", "avg_volume", "cumulative_volatility"]
