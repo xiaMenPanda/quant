@@ -30,6 +30,7 @@ def cal_factor_info(board, df, trade_dates_before=DURATION.ONE_YEAR, trade_dates
     if cal_size == 0:
         cumulative_volatility = np.nan
     else:
+        # INDEX没有去除指数涨跌幅选项
         cumulative_volatility = df["涨跌幅"].sum() if board == "INDEX" else df["去除指数涨跌幅"].sum()
 
     return {
@@ -109,6 +110,7 @@ def get_factor_mysql(factor_df):
     factor_mysql_params["cum_volatility_six_months"] = cum_volatility_series.SIX_MONTHS
 
     for key in list(factor_mysql_params.keys()):
+        # 剔除无效计算结果nan值无法存入mysql
         value = factor_mysql_params[key]
         if pd.isna(value):
             del factor_mysql_params[key]

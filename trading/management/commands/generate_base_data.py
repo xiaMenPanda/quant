@@ -33,10 +33,8 @@ class Command(BaseCommand):
                 try:
                     iuid, name, base_df = self.genetate_base(read_path, file, board)
                     obj = Instruments.objects.filter(iuid=iuid).first()
-                    if base_df.shape[0] == 0 or obj:
+                    if base_df.shape[0] == 0 or obj:  # 排除中小板股票与创业板股票
                         continue
-                    # if base_df.shape[0] == 0:
-                    #     continue
                     factor_df = self.generate_factor(base_df, name, board)
                     base_store[iuid], factor_store[iuid] = base_df, factor_df  # 生成hdf文件
                     params = {}
@@ -101,7 +99,6 @@ class Command(BaseCommand):
             res = cal_factor_info(board, base_df, trade_dates_before=DURATION.NAME_TO_VALUE[duration])
             series = pd.Series(res, name=duration)
             factor_df = factor_df.append(series)
-        # 可在此处操作
         return factor_df
 
     def eliment_coefficient(self, value, coefficient):
